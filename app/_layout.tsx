@@ -1,8 +1,8 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
+import { SplashScreen } from '../src/components/SplashScreen';
 
 function NavigationGuard() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -22,11 +22,7 @@ function NavigationGuard() {
   }, [isAuthenticated, isLoading, segments, router]);
 
   if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
+    return <SplashScreen />;
   }
 
   return (

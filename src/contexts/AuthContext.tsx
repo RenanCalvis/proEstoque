@@ -32,8 +32,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function loadStorageData() {
       try {
-        const storedUser = await AsyncStorage.getItem('@ProEstoque:user');
-        const storedToken = await AsyncStorage.getItem('@ProEstoque:token');
+        const [storedUser, storedToken] = await Promise.all([
+          AsyncStorage.getItem('@ProEstoque:user'),
+          AsyncStorage.getItem('@ProEstoque:token'),
+          new Promise((resolve) => setTimeout(resolve, 1500)), 
+        ]);
 
         if (storedUser && storedToken) {
           setUser(JSON.parse(storedUser));
