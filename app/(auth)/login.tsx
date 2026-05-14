@@ -7,17 +7,18 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 
 import { Colors, Spacing, Typography } from '../../src/constants/theme';
 import { Button } from '../../src/components/Button';
 import { Input } from '../../src/components/Input';
 import { LogoProEstoque } from '../../src/components/LogoProEstoque';
+import { useAuth } from '../../src/contexts/AuthContext';
 
 type FormFields = { email: string; password: string };
 
 export default function LoginScreen() {
-  const router = useRouter();
+  const { login, isLoading } = useAuth();
   const [form, setForm] = useState<FormFields>({ email: '', password: '' });
   const [errors, setErrors] = useState<Partial<FormFields>>({});
   const [loading, setLoading] = useState(false);
@@ -29,7 +30,7 @@ export default function LoginScreen() {
     }
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     let valid = true;
     const newErrors: Partial<FormFields> = {};
 
@@ -46,10 +47,13 @@ export default function LoginScreen() {
 
     if (valid) {
       setLoading(true);
-      setTimeout(() => {
+      try {
+        await login();
+      } catch (error) {
+        console.error(error);
+      } finally {
         setLoading(false);
-        router.replace('/(tabs)/home');
-      }, 2000);
+      }
     }
   };
 
@@ -97,7 +101,7 @@ export default function LoginScreen() {
             <Button
               title="Entrar"
               onPress={handleLogin}
-              isLoading={loading}
+              isLoading={isLoading || loading}
               fullWidth
               style={styles.submitButton}
             />

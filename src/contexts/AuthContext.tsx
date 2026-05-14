@@ -1,5 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 
 export type User = {
   id: string;
@@ -49,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const mockUser: User = {
       id: '1',
-      nome: 'Usuário Teste',
+      nome: 'Renan Teste',
       email: 'teste@proestoque.com',
     };
     const mockToken = 'abc123token';

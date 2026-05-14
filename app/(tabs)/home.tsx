@@ -9,9 +9,18 @@ import {
   formatarPreco 
 } from '../../src/data/mockData';
 import { ProdutoCard } from '../../src/components/ProdutoCard';
+import { useAuth } from '../../src/contexts/AuthContext';
 
 export default function HomeScreen() {
+  const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Bom dia';
+    if (hour < 18) return 'Boa tarde';
+    return 'Boa noite';
+  };
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -31,9 +40,14 @@ export default function HomeScreen() {
 
   const renderHeader = () => (
     <View style={styles.headerContainer}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Olá, Renan 👋</Text>
-        <Text style={styles.subtitle}>Visão geral do seu estoque</Text>
+      <View style={styles.headerRow}>
+        <View>
+          <Text style={styles.title}>{getGreeting()}, {user?.nome?.split(' ')[0] || 'Usuário'} 👋</Text>
+          <Text style={styles.subtitle}>Visão geral do seu estoque</Text>
+        </View>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{user?.nome?.charAt(0).toUpperCase() || 'U'}</Text>
+        </View>
       </View>
 
       <View style={styles.metricsGrid}>
@@ -79,7 +93,25 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.appBackground },
   content: { padding: Spacing[4], flexGrow: 1 },
   headerContainer: { marginBottom: Spacing[2] },
-  header: { marginBottom: Spacing[6] },
+  headerRow: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    marginBottom: Spacing[6] 
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.primary[600],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    color: Colors.surface,
+    fontSize: Typography.fontSize.lg,
+    fontWeight: Typography.fontWeight.bold,
+  },
   title: {
     fontSize: Typography.fontSize.xl,
     fontWeight: Typography.fontWeight.bold,

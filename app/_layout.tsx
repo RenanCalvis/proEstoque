@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
 
@@ -15,11 +15,9 @@ function NavigationGuard() {
     const inAuthGroup = segments[0] === '(auth)';
 
     if (!isAuthenticated && !inAuthGroup) {
-      // Se não está autenticado e tenta acessar rota protegida, redireciona para login
       router.replace('/(auth)/login');
     } else if (isAuthenticated && inAuthGroup) {
-      // Se está autenticado e tenta acessar rotas de login/cadastro, redireciona para o dashboard
-      router.replace('/(tabs)');
+      router.replace('/(tabs)/home');
     }
   }, [isAuthenticated, isLoading, segments, router]);
 
