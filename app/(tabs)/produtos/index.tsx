@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
   FlatList,
@@ -12,12 +13,15 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Input } from '../../src/components/Input';
-import { ProdutoCard } from '../../src/components/ProdutoCard';
-import { Colors, Radius, Spacing, Typography } from '../../src/constants/theme';
-import { CATEGORIAS_MOCK, PRODUTOS_MOCK } from '../../src/data/mockData';
+
+import { Input } from '../../../src/components/Input';
+import { ProdutoCard } from '../../../src/components/ProdutoCard';
+import { Colors, Radius, Spacing, Typography } from '../../../src/constants/theme';
+import { CATEGORIAS_MOCK } from '../../../src/data/mockData';
+import { useProducts } from '../../../src/contexts/ProductsContext';
 
 export default function ProdutosScreen() {
+  const { products } = useProducts();
   const [busca, setBusca] = useState('');
   const [categoriaAtiva, setCategoriaAtiva] = useState('todos');
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'grouped'>('list');
@@ -28,19 +32,19 @@ export default function ProdutosScreen() {
   ];
 
   const produtosFiltrados = useMemo(() => {
-    return PRODUTOS_MOCK.filter((p) => {
+    return products.filter((p) => {
       const matchBusca = p.nome.toLowerCase().includes(busca.toLowerCase());
       const matchCat =
-        categoriaAtiva === 'todos' || p.categoriaId === categoriaAtiva;
+        categoriaAtiva === 'todos' || (p as any).categoriaId === categoriaAtiva;
       return matchBusca && matchCat;
     });
-  }, [busca, categoriaAtiva]);
+  }, [products, busca, categoriaAtiva]);
 
   const secoesFiltradas = useMemo(() => {
     if (viewMode !== 'grouped') return [];
 
     return CATEGORIAS_MOCK.map((cat) => {
-      const prods = produtosFiltrados.filter((p) => p.categoriaId === cat.id);
+      const prods = produtosFiltrados.filter((p) => (p as any).categoriaId === cat.id);
       return {
         id: cat.id,
         title: cat.nome,
@@ -53,90 +57,90 @@ export default function ProdutosScreen() {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.header}>
         <View style={styles.viewModeContainer}>
-        <View style={styles.viewModeToggles}>
-          <TouchableOpacity
-            onPress={() => setViewMode('list')}
-            style={[
-              styles.viewModeBtn,
-              viewMode === 'list' && styles.viewModeBtnActive,
-            ]}
+          <View style={styles.viewModeToggles}>
+            <TouchableOpacity
+              onPress={() => setViewMode('list')}
+              style={[
+                styles.viewModeBtn,
+                viewMode === 'list' && styles.viewModeBtnActive,
+              ]}
+            >
+              <Feather
+                name="list"
+                size={20}
+                color={
+                  viewMode === 'list' ? Colors.primary[600] : Colors.textSecondary
+                }
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setViewMode('grid')}
+              style={[
+                styles.viewModeBtn,
+                viewMode === 'grid' && styles.viewModeBtnActive,
+              ]}
+            >
+              <Feather
+                name="grid"
+                size={20}
+                color={
+                  viewMode === 'grid' ? Colors.primary[600] : Colors.textSecondary
+                }
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setViewMode('grouped')}
+              style={[
+                styles.viewModeBtn,
+                viewMode === 'grouped' && styles.viewModeBtnActive,
+              ]}
+            >
+              <Feather
+                name="layers"
+                size={20}
+                color={
+                  viewMode === 'grouped'
+                    ? Colors.primary[600]
+                    : Colors.textSecondary
+                }
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+        <Input
+          iconName="search"
+          placeholder="Buscar produtos..."
+          value={busca}
+          onChangeText={setBusca}
+        />
+
+        <View style={styles.controlsRow}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesScroll}
+            keyboardShouldPersistTaps="handled"
           >
-            <Feather
-              name="list"
-              size={20}
-              color={
-                viewMode === 'list' ? Colors.primary[600] : Colors.textSecondary
-              }
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setViewMode('grid')}
-            style={[
-              styles.viewModeBtn,
-              viewMode === 'grid' && styles.viewModeBtnActive,
-            ]}
-          >
-            <Feather
-              name="grid"
-              size={20}
-              color={
-                viewMode === 'grid' ? Colors.primary[600] : Colors.textSecondary
-              }
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setViewMode('grouped')}
-            style={[
-              styles.viewModeBtn,
-              viewMode === 'grouped' && styles.viewModeBtnActive,
-            ]}
-          >
-            <Feather
-              name="layers"
-              size={20}
-              color={
-                viewMode === 'grouped'
-                  ? Colors.primary[600]
-                  : Colors.textSecondary
-              }
-            />
-          </TouchableOpacity>
+            {categorias.map((cat) => {
+              const isAtivo = categoriaAtiva === cat.id;
+              return (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={[styles.chip, isAtivo && styles.chipActive]}
+                  onPress={() => setCategoriaAtiva(cat.id)}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[styles.chipText, isAtivo && styles.chipTextActive]}
+                  >
+                    {cat.nome}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
         </View>
       </View>
-      <Input
-        iconName="search"
-        placeholder="Buscar produtos..."
-        value={busca}
-        onChangeText={setBusca}
-      />
-
-      <View style={styles.controlsRow}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoriesScroll}
-          keyboardShouldPersistTaps="handled"
-        >
-          {categorias.map((cat) => {
-            const isAtivo = categoriaAtiva === cat.id;
-            return (
-              <TouchableOpacity
-                key={cat.id}
-                style={[styles.chip, isAtivo && styles.chipActive]}
-                onPress={() => setCategoriaAtiva(cat.id)}
-                activeOpacity={0.7}
-              >
-                <Text
-                  style={[styles.chipText, isAtivo && styles.chipTextActive]}
-                >
-                  {cat.nome}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
-    </View>
     </TouchableWithoutFeedback>
   );
 
@@ -157,7 +161,14 @@ export default function ProdutosScreen() {
           keyExtractor={(item) => item.id}
           keyboardDismissMode="on-drag"
           keyboardShouldPersistTaps="handled"
-          renderItem={({ item }) => <ProdutoCard produto={item} />}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => router.push(`/produtos/${item.id}`)}
+              activeOpacity={0.7}
+            >
+              <ProdutoCard produto={item as any} />
+            </TouchableOpacity>
+          )}
           renderSectionHeader={({ section }) => (
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>{section.title}</Text>
@@ -179,10 +190,15 @@ export default function ProdutosScreen() {
           data={produtosFiltrados}
           keyExtractor={(item) => item.id}
           keyboardDismissMode="on-drag"
-          // keyboardShouldPersistTaps="handled"
           numColumns={viewMode === 'grid' ? 2 : 1}
           renderItem={({ item }) => (
-            <ProdutoCard produto={item} isGrid={viewMode === 'grid'} />
+            <TouchableOpacity
+              onPress={() => router.push(`/produtos/${item.id}`)}
+              activeOpacity={0.7}
+              style={viewMode === 'grid' ? styles.gridItemWrapper : undefined}
+            >
+              <ProdutoCard produto={item as any} isGrid={viewMode === 'grid'} />
+            </TouchableOpacity>
           )}
           ListEmptyComponent={renderEmpty}
           columnWrapperStyle={
@@ -190,6 +206,14 @@ export default function ProdutosScreen() {
           }
         />
       )}
+
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push('/produtos/novo')}
+        activeOpacity={0.8}
+      >
+        <Feather name="plus" size={24} color={Colors.white} />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -197,7 +221,7 @@ export default function ProdutosScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.appBackground },
   container: { flex: 1 },
-  content: { padding: Spacing[4], flexGrow: 1 },
+  content: { padding: Spacing[4], flexGrow: 1, paddingBottom: 88 },
   header: { 
     marginBottom: Spacing[2], 
     paddingHorizontal: Spacing[4], 
@@ -286,7 +310,10 @@ const styles = StyleSheet.create({
   },
   columnWrapper: {
     justifyContent: 'space-between',
-    marginHorizontal: Spacing[4],
+    marginHorizontal: Spacing[2],
+  },
+  gridItemWrapper: {
+    flex: 1,
   },
   emptyContainer: {
     flex: 1,
@@ -297,5 +324,23 @@ const styles = StyleSheet.create({
   emptyText: {
     color: Colors.textSecondary,
     fontSize: Typography.fontSize.base,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: Spacing[6],
+    right: Spacing[6],
+    width: 56,
+    height: 56,
+    borderRadius: Radius.full,
+    backgroundColor: Colors.primary[600],
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
+    borderBottomWidth: 4,
+    borderColor: Colors.primary[700],
   },
 });
