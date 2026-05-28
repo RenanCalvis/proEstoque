@@ -2,6 +2,7 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from '../src/contexts/AuthContext';
+import { ProductsProvider } from '../src/contexts/ProductsContext';
 import { SplashScreen } from '../src/components/SplashScreen';
 
 function NavigationGuard() {
@@ -36,8 +37,10 @@ function NavigationGuard() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <StatusBar style="dark" />
-      <NavigationGuard />
+      <ProductsProvider>
+        <StatusBar style="dark" />
+        <NavigationGuard />
+      </ProductsProvider>
     </AuthProvider>
   );
 }
