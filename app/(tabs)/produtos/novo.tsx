@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../src/components/Button';
 import { Input } from '../../../src/components/Input';
+import { ImagePickerField } from '../../../src/components/ImagePickerField';
 import { Colors, Spacing, Typography } from '../../../src/constants/theme';
 import { useProducts } from '../../../src/contexts/ProductsContext';
 import { produtoSchema, ProdutoFormData } from '../../../src/schemas/produtoSchema';
@@ -67,6 +68,18 @@ export default function NovoProdutoScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.form}>
+            <Controller
+              control={control}
+              name="foto"
+              render={({ field: { onChange, value } }) => (
+                <ImagePickerField
+                  value={value}
+                  onChange={onChange}
+                  error={errors.foto?.message}
+                />
+              )}
+            />
+
             <Text style={styles.label}>Nome do Produto</Text>
             <Controller
               control={control}

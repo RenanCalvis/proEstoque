@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { Colors, Radius, Spacing, Typography } from '../constants/theme';
 import { Produto } from '../data/mockData';
+import { Feather } from '@expo/vector-icons';
 
 export function ProdutoCard({ produto, isGrid = false }: { produto: Produto, isGrid?: boolean }) {
   let badgeColor = Colors.success;
@@ -17,11 +18,20 @@ export function ProdutoCard({ produto, isGrid = false }: { produto: Produto, isG
 
   return (
     <View style={[styles.card, isGrid && styles.cardGrid]}>
-      <View style={[styles.infoContainer, isGrid && styles.infoContainerGrid]}>
-        <Text style={[styles.name, isGrid && styles.nameGrid]} numberOfLines={isGrid ? 2 : 1}>
-          {produto.nome}
-        </Text>
-        <Text style={styles.qty}>{produto.quantidade} {produto.unidade}</Text>
+      <View style={[styles.contentRow, isGrid && styles.contentRowGrid]}>
+        {(produto as any).foto ? (
+          <Image source={{ uri: (produto as any).foto }} style={[styles.image, isGrid && styles.imageGrid]} />
+        ) : (
+          <View style={[styles.iconPlaceholder, isGrid && styles.iconPlaceholderGrid]}>
+            <Feather name="package" size={20} color={Colors.textSecondary} />
+          </View>
+        )}
+        <View style={[styles.infoContainer, isGrid && styles.infoContainerGrid]}>
+          <Text style={[styles.name, isGrid && styles.nameGrid]} numberOfLines={isGrid ? 2 : 1}>
+            {produto.nome}
+          </Text>
+          <Text style={styles.qty}>{produto.quantidade} {produto.unidade || 'un'}</Text>
+        </View>
       </View>
       <View style={[styles.badge, { backgroundColor: badgeColor.bg, borderColor: badgeColor.border }, isGrid && styles.badgeGrid]}>
         <Text style={[styles.badgeText, { color: badgeColor.text }]}>{badgeText}</Text>
@@ -49,6 +59,46 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginHorizontal: Spacing[2],
     justifyContent: 'flex-start',
+  },
+  contentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  contentRowGrid: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    width: '100%',
+  },
+  image: {
+    width: 48,
+    height: 48,
+    borderRadius: Radius.md,
+    marginRight: Spacing[3],
+    backgroundColor: Colors.border,
+  },
+  imageGrid: {
+    width: '100%',
+    height: 100,
+    marginRight: 0,
+    marginBottom: Spacing[2],
+  },
+  iconPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: Radius.md,
+    backgroundColor: Colors.appBackground,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing[3],
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  iconPlaceholderGrid: {
+    width: '100%',
+    height: 100,
+    marginRight: 0,
+    marginBottom: Spacing[2],
   },
   infoContainer: {
     flex: 1,
