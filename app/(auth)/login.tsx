@@ -48,7 +48,7 @@ export default function LoginScreen() {
     if (valid) {
       setLoading(true);
       try {
-        await login();
+        await login({ email: form.email, senha: form.password });
       } catch (error) {
         console.error(error);
       } finally {

@@ -7,18 +7,19 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Colors, Spacing, Typography } from '../../src/constants/theme';
 import { Button } from '../../src/components/Button';
 import { Input } from '../../src/components/Input';
 import { LogoProEstoque } from '../../src/components/LogoProEstoque';
+import { useAuth } from '../../src/contexts/AuthContext';
 
 type FormFields = { nome: string; email: string; senha: string; confirmarSenha: string };
 
 export default function CadastroScreen() {
-  const router = useRouter();
+  const { registrar } = useAuth();
   const [form, setForm] = useState<FormFields>({ nome: '', email: '', senha: '', confirmarSenha: '' });
   const [errors, setErrors] = useState<Partial<FormFields>>({});
   const [loading, setLoading] = useState(false);
@@ -46,10 +47,13 @@ export default function CadastroScreen() {
 
     if (valid) {
       setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        router.replace('/(auth)/login');
-      }, 2000);
+      registrar({
+        nome: form.nome,
+        email: form.email,
+        senha: form.senha,
+      })
+      .catch((error) => console.error(error))
+      .finally(() => setLoading(false));
     }
   };
 
