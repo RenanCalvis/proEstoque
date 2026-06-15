@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Text,
   View,
+  Alert,
 } from 'react-native';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -52,7 +53,22 @@ export default function CadastroScreen() {
         email: form.email,
         senha: form.senha,
       })
-      .catch((error) => console.error(error))
+      .catch((error: any) => {
+        if (error.response?.status === 422) {
+          const backendErrors = error.response.data.errors;
+          const apiErrors: Partial<FormFields> = {};
+          backendErrors.forEach((err: any) => {
+            if (err.path.includes('nome')) apiErrors.nome = err.message;
+            if (err.path.includes('email')) apiErrors.email = err.message;
+            if (err.path.includes('senha')) apiErrors.senha = err.message;
+          });
+          setErrors(apiErrors);
+        } else if (error.response?.data?.message) {
+          Alert.alert('Erro no Cadastro', error.response.data.message);
+        } else {
+          Alert.alert('Erro', 'Ocorreu um erro inesperado ao cadastrar.');
+        }
+      })
       .finally(() => setLoading(false));
     }
   };

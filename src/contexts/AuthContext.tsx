@@ -55,7 +55,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (data: any) => {
-    setIsLoading(true);
     try {
       const response = await api.post('/auth/login', data);
       const { usuario, token: apiToken, refreshToken } = response.data;
@@ -69,15 +68,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(usuario);
       setToken(apiToken);
     } catch (error) {
-      console.error('Erro ao fazer login', error);
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const registrar = async (data: any) => {
-    setIsLoading(true);
     try {
       const response = await api.post('/auth/registro', data);
       const { usuario, token: apiToken, refreshToken } = response.data;
@@ -91,15 +86,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(usuario);
       setToken(apiToken);
     } catch (error) {
-      console.error('Erro ao registrar', error);
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const logout = async () => {
-    setIsLoading(true);
     try {
       await AsyncStorage.removeItem('@ProEstoque:user');
       await AsyncStorage.removeItem('@ProEstoque:token');
@@ -108,8 +99,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(null);
     } catch (error) {
       console.error('Erro ao limpar AsyncStorage', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
