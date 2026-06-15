@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
+import { api } from '../services/api';
 
 export type User = {
   id: string;
@@ -18,7 +19,8 @@ export type AuthContextType = {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: () => Promise<void>;
+  login: (data: any) => Promise<void>;
+  registrar: (data: any) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -35,12 +37,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const [storedUser, storedToken] = await Promise.all([
           AsyncStorage.getItem('@ProEstoque:user'),
           AsyncStorage.getItem('@ProEstoque:token'),
-          new Promise((resolve) => setTimeout(resolve, 1500)), 
         ]);
 
         if (storedUser && storedToken) {
           setUser(JSON.parse(storedUser));
           setToken(storedToken);
+          // O token é adicionado via interceptor, mas podemos confirmar
         }
       } catch (error) {
         console.error('Erro ao recuperar dados do AsyncStorage', error);
@@ -52,24 +54,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadStorageData();
   }, []);
 
-  const login = async () => {
+  const login = async (data: any) => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    const mockUser: User = {
-      id: '1',
-      nome: 'Renan Teste',
-      email: 'teste@proestoque.com',
-    };
-    const mockToken = 'abc123token';
-
     try {
-      await AsyncStorage.setItem('@ProEstoque:user', JSON.stringify(mockUser));
-      await AsyncStorage.setItem('@ProEstoque:token', mockToken);
-      setUser(mockUser);
-      setToken(mockToken);
+      const response = await api.post('/auth/login', data);
+      const { usuario, token: apiToken, refreshToken } = response.data;
+
+      await AsyncStorage.setItem('@ProEstoque:user', JSON.stringify(usuario));
+      await AsyncStorage.setItem('@ProEstoque:token', apiToken);
+      if (refreshToken) {
+        await AsyncStorage.setItem('@ProEstoque:refreshToken', refreshToken);
+      }
+      
+      setUser(usuario);
+      setToken(apiToken);
     } catch (error) {
-      console.error('Erro ao salvar no AsyncStorage', error);
+      console.error('Erro ao fazer login', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const registrar = async (data: any) => {
+    setIsLoading(true);
+    try {
+      const response = await api.post('/auth/registro', data);
+      const { usuario, token: apiToken, refreshToken } = response.data;
+
+      await AsyncStorage.setItem('@ProEstoque:user', JSON.stringify(usuario));
+      await AsyncStorage.setItem('@ProEstoque:token', apiToken);
+      if (refreshToken) {
+        await AsyncStorage.setItem('@ProEstoque:refreshToken', refreshToken);
+      }
+      
+      setUser(usuario);
+      setToken(apiToken);
+    } catch (error) {
+      console.error('Erro ao registrar', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -80,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await AsyncStorage.removeItem('@ProEstoque:user');
       await AsyncStorage.removeItem('@ProEstoque:token');
+      await AsyncStorage.removeItem('@ProEstoque:refreshToken');
       setUser(null);
       setToken(null);
     } catch (error) {
@@ -97,6 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated: !!user && !!token,
         login,
+        registrar,
         logout,
       }}
     >
