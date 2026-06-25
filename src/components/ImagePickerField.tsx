@@ -16,8 +16,6 @@ export function ImagePickerField({ value, onChange, error }: ImagePickerFieldPro
   React.useEffect(() => {
     setLocalValue(value);
   }, [value]);
-
-  console.log('ImagePickerField rendering with localValue:', localValue, 'and props value:', value);
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     
@@ -33,10 +31,7 @@ export function ImagePickerField({ value, onChange, error }: ImagePickerFieldPro
       quality: 0.8,
     });
 
-    console.log('ImagePicker Result:', result);
-
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      console.log('Selected URI:', result.assets[0].uri);
       setLocalValue(result.assets[0].uri);
       onChange(result.assets[0].uri);
     }
