@@ -1,12 +1,22 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
-const baseURL = Platform.OS === 'android' ? 'http://10.0.2.2:3333/api' : 'http://localhost:3333/api';
+const fallbackURL = Platform.OS === 'android' ? 'http://10.0.2.2:3333/api' : 'http://localhost:3333/api';
+const baseURL = Constants.expoConfig?.extra?.apiUrl || fallbackURL;
+
+export const useMocks = Constants.expoConfig?.extra?.useMocks || false;
 
 export const api = axios.create({
   baseURL,
 });
+
+let onLogoutCallback: (() => void) | null = null;
+
+export const setOnLogout = (callback: () => void) => {
+  onLogoutCallback = callback;
+};
 
 api.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem('@ProEstoque:token');
@@ -36,6 +46,9 @@ api.interceptors.response.use(
         } catch (refreshError) {
           await AsyncStorage.removeItem('@ProEstoque:token');
           await AsyncStorage.removeItem('@ProEstoque:refreshToken');
+          if (onLogoutCallback) {
+            onLogoutCallback();
+          }
         }
       }
     }
