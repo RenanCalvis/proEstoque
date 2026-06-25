@@ -61,7 +61,6 @@ export default function EditarProdutoScreen() {
 
   // Pré-preenche o formulário quando o produto correspondente é encontrado
   useEffect(() => {
-    console.log('useEffect triggered! Resetting form. Product:', product?.nome);
     if (product) {
       reset({
         nome: product.nome,
@@ -76,7 +75,6 @@ export default function EditarProdutoScreen() {
   }, [product, reset]);
 
   const onSubmit = async (data: ProdutoFormData) => {
-    console.log('Submitting form with data:', data);
     try {
       if (id) {
         await editarProduto({

@@ -16,10 +16,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Input } from '../../../src/components/Input';
 import { ProdutoCard } from '../../../src/components/ProdutoCard';
+import { ProdutoSkeletonList } from '../../../src/components/ProdutoSkeleton';
 import { Colors, Radius, Spacing, Typography } from '../../../src/constants/theme';
 import { useProducts } from '../../../src/contexts/ProductsContext';
 import { useCategorias } from '../../../src/hooks/useCategorias';
-import { LoadingView } from '../../../src/components/LoadingView';
+import { useEstoqueNotifications } from '../../../src/hooks/useEstoqueNotifications';
 import { ErrorView } from '../../../src/components/ErrorView';
 
 export default function ProdutosScreen() {
@@ -28,6 +29,9 @@ export default function ProdutosScreen() {
   const [busca, setBusca] = useState('');
   const [categoriaAtiva, setCategoriaAtiva] = useState('todos');
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'grouped'>('list');
+
+  // Agenda notificação diária de estoque crítico
+  useEstoqueNotifications(products);
 
   const categorias = [
     { id: 'todos', nome: 'Todos', icone: '', cor: '' },
@@ -154,7 +158,14 @@ export default function ProdutosScreen() {
   );
 
   if (isLoading && products.length === 0) {
-    return <LoadingView />;
+    return (
+      <SafeAreaView style={styles.safeArea} edges={[]}>
+        {renderHeader()}
+        <View style={styles.skeletonContent}>
+          <ProdutoSkeletonList count={6} />
+        </View>
+      </SafeAreaView>
+    );
   }
 
   if (error && products.length === 0) {
@@ -237,6 +248,7 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.appBackground },
   container: { flex: 1 },
   content: { padding: Spacing[4], flexGrow: 1, paddingBottom: 88 },
+  skeletonContent: { padding: Spacing[4] },
   header: { 
     marginBottom: Spacing[2], 
     paddingHorizontal: Spacing[4], 
