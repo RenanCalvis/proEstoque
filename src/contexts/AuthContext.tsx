@@ -6,11 +6,12 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { api } from '../services/api';
+import { api, setOnLogout } from '../services/api';
 
 export type User = {
   id: string;
   nome: string;
+  
   email: string;
 };
 
@@ -101,6 +102,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Erro ao limpar AsyncStorage', error);
     }
   };
+
+  useEffect(() => {
+    setOnLogout(logout);
+  }, []);
 
   return (
     <AuthContext.Provider
