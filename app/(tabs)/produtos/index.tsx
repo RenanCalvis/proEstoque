@@ -17,18 +17,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Input } from '../../../src/components/Input';
 import { ProdutoCard } from '../../../src/components/ProdutoCard';
 import { Colors, Radius, Spacing, Typography } from '../../../src/constants/theme';
-import { CATEGORIAS_MOCK } from '../../../src/data/mockData';
 import { useProducts } from '../../../src/contexts/ProductsContext';
+import { useCategorias } from '../../../src/hooks/useCategorias';
+import { LoadingView } from '../../../src/components/LoadingView';
+import { ErrorView } from '../../../src/components/ErrorView';
 
 export default function ProdutosScreen() {
-  const { products } = useProducts();
+  const { products, isLoading, error, carregarProdutos } = useProducts();
+  const { categorias: categoriasApi } = useCategorias();
   const [busca, setBusca] = useState('');
   const [categoriaAtiva, setCategoriaAtiva] = useState('todos');
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'grouped'>('list');
 
   const categorias = [
     { id: 'todos', nome: 'Todos', icone: '', cor: '' },
-    ...CATEGORIAS_MOCK,
+    ...categoriasApi,
   ];
 
   const produtosFiltrados = useMemo(() => {
@@ -43,7 +46,7 @@ export default function ProdutosScreen() {
   const secoesFiltradas = useMemo(() => {
     if (viewMode !== 'grouped') return [];
 
-    return CATEGORIAS_MOCK.map((cat) => {
+    return categoriasApi.map((cat) => {
       const prods = produtosFiltrados.filter((p) => (p as any).categoriaId === cat.id);
       return {
         id: cat.id,
@@ -150,6 +153,14 @@ export default function ProdutosScreen() {
     </View>
   );
 
+  if (isLoading && products.length === 0) {
+    return <LoadingView />;
+  }
+
+  if (error && products.length === 0) {
+    return <ErrorView message={error} onRetry={carregarProdutos} />;
+  }
+
   return (
     <SafeAreaView style={styles.safeArea} edges={[]}>
       {renderHeader()}
@@ -161,6 +172,8 @@ export default function ProdutosScreen() {
           keyExtractor={(item) => item.id}
           keyboardDismissMode="on-drag"
           keyboardShouldPersistTaps="handled"
+          refreshing={isLoading}
+          onRefresh={carregarProdutos}
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => router.push(`/produtos/${item.id}`)}
@@ -191,6 +204,8 @@ export default function ProdutosScreen() {
           keyExtractor={(item) => item.id}
           keyboardDismissMode="on-drag"
           numColumns={viewMode === 'grid' ? 2 : 1}
+          refreshing={isLoading}
+          onRefresh={carregarProdutos}
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => router.push(`/produtos/${item.id}`)}

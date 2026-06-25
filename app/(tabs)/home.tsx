@@ -1,28 +1,23 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { Colors, Radius, Spacing, Typography } from '../../src/constants/theme';
-import { CATEGORIAS_MOCK } from '../../src/data/mockData';
 import { ProdutoCard } from '../../src/components/ProdutoCard';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { useProducts } from '../../src/contexts/ProductsContext';
+import { useCategorias } from '../../src/hooks/useCategorias';
+import { LoadingView } from '../../src/components/LoadingView';
+import { ErrorView } from '../../src/components/ErrorView';
 
 export default function HomeScreen() {
   const { user } = useAuth();
-  const { products } = useProducts();
-  const [refreshing, setRefreshing] = useState(false);
+  const { products, isLoading, error, carregarProdutos } = useProducts();
+  const { categorias } = useCategorias();
 
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Bom dia';
     if (hour < 18) return 'Boa tarde';
     return 'Boa noite';
-  };
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
   };
 
   const formatarPrecoBRL = (valor: number) => {
@@ -40,7 +35,7 @@ export default function HomeScreen() {
   
   const metricas = [
     { label: 'Total em produtos', valor: products.length },
-    { label: 'Categorias', valor: CATEGORIAS_MOCK.length },
+    { label: 'Categorias', valor: categorias.length },
     { label: 'Alertas', valor: produtosComBaixoEstoque.length },
     { label: 'Valor Estoque', valor: formatarPrecoBRL(valorTotalEstoque) },
   ];
@@ -81,6 +76,14 @@ export default function HomeScreen() {
     </View>
   );
 
+  if (isLoading && products.length === 0) {
+    return <LoadingView />;
+  }
+
+  if (error && products.length === 0) {
+    return <ErrorView message={error} onRetry={carregarProdutos} />;
+  }
+
   return (
     <FlatList
       style={styles.container}
@@ -90,7 +93,7 @@ export default function HomeScreen() {
       renderItem={({ item }) => <ProdutoCard produto={item as any} />}
       ListHeaderComponent={renderHeader}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.primary[600]]} />
+        <RefreshControl refreshing={isLoading} onRefresh={carregarProdutos} colors={[Colors.primary[600]]} />
       }
     />
   );

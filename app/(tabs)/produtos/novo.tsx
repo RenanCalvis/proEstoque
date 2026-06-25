@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,9 +16,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../../src/components/Button';
 import { Input } from '../../../src/components/Input';
 import { ImagePickerField } from '../../../src/components/ImagePickerField';
-import { Colors, Spacing, Typography } from '../../../src/constants/theme';
+import { Colors, Spacing, Typography, Radius } from '../../../src/constants/theme';
 import { useProducts } from '../../../src/contexts/ProductsContext';
 import { produtoSchema, ProdutoFormData } from '../../../src/schemas/produtoSchema';
+import { useCategorias } from '../../../src/hooks/useCategorias';
 
 const formatarMoedaInput = (valor: number | undefined | null) => {
   if (valor === undefined || valor === null) return 'R$ 0,00';
@@ -31,6 +33,7 @@ const formatarMoedaInput = (valor: number | undefined | null) => {
 
 export default function NovoProdutoScreen() {
   const { adicionarProduto } = useProducts();
+  const { categorias } = useCategorias();
 
   const {
     control,
@@ -43,6 +46,7 @@ export default function NovoProdutoScreen() {
       quantidade: 0,
       quantidadeMinima: 0,
       preco: 0,
+      categoriaId: '',
       observacao: '',
       foto: '',
     },
@@ -50,7 +54,7 @@ export default function NovoProdutoScreen() {
 
   const onSubmit = async (data: ProdutoFormData) => {
     try {
-      adicionarProduto(data);
+      await adicionarProduto(data);
       router.back();
     } catch (error) {
       console.error('Erro ao adicionar produto:', error);
@@ -150,6 +154,36 @@ export default function NovoProdutoScreen() {
               </View>
             </View>
 
+            <Text style={styles.label}>Categoria</Text>
+            <Controller
+              control={control}
+              name="categoriaId"
+              render={({ field: { onChange, value } }) => (
+                <View style={styles.categoriesContainer}>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
+                    {categorias.map((cat) => {
+                      const isAtivo = value === cat.id;
+                      return (
+                        <TouchableOpacity
+                          key={cat.id}
+                          style={[styles.chip, isAtivo && styles.chipActive]}
+                          onPress={() => onChange(cat.id)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={[styles.chipText, isAtivo && styles.chipTextActive]}>
+                            {cat.nome}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </ScrollView>
+                  {errors.categoriaId && (
+                    <Text style={styles.errorText}>{errors.categoriaId.message}</Text>
+                  )}
+                </View>
+              )}
+            />
+
             <Text style={styles.label}>Preço</Text>
             <Controller
               control={control}
@@ -234,6 +268,40 @@ const styles = StyleSheet.create({
   },
   col: {
     flex: 1,
+  },
+  categoriesContainer: {
+    marginBottom: Spacing[4],
+  },
+  categoriesScroll: {
+    paddingVertical: Spacing[1],
+  },
+  chip: {
+    backgroundColor: Colors.surface,
+    paddingHorizontal: Spacing[4],
+    paddingVertical: Spacing[2],
+    borderRadius: Radius.full,
+    borderWidth: 1,
+    borderBottomWidth: 3,
+    borderColor: Colors.border,
+    marginRight: Spacing[2],
+  },
+  chipActive: {
+    backgroundColor: Colors.primary[600],
+    borderColor: Colors.primary[700],
+  },
+  chipText: {
+    fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.medium,
+    color: Colors.textSecondary,
+  },
+  chipTextActive: {
+    color: Colors.white,
+    fontWeight: Typography.fontWeight.bold,
+  },
+  errorText: {
+    color: Colors.danger.text,
+    fontSize: Typography.fontSize.sm,
+    marginTop: Spacing[1],
   },
   button: {
     marginTop: Spacing[6],

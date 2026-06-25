@@ -21,6 +21,7 @@ import { ImagePickerField } from '../../../src/components/ImagePickerField';
 import { Colors, Spacing, Radius, Typography } from '../../../src/constants/theme';
 import { useProducts } from '../../../src/contexts/ProductsContext';
 import { produtoSchema, ProdutoFormData } from '../../../src/schemas/produtoSchema';
+import { useCategorias } from '../../../src/hooks/useCategorias';
 
 const formatarMoedaInput = (valor: number | undefined | null) => {
   if (valor === undefined || valor === null) return 'R$ 0,00';
@@ -35,6 +36,7 @@ const formatarMoedaInput = (valor: number | undefined | null) => {
 export default function EditarProdutoScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { products, atualizarProduto: editarProduto, deletarProduto } = useProducts();
+  const { categorias } = useCategorias();
 
   const product = products.find((p) => p.id === id);
 
@@ -50,6 +52,7 @@ export default function EditarProdutoScreen() {
       quantidade: 0,
       quantidadeMinima: 0,
       preco: 0,
+      categoriaId: '',
       observacao: '',
       foto: '',
     },
@@ -63,6 +66,7 @@ export default function EditarProdutoScreen() {
         quantidade: product.quantidade,
         quantidadeMinima: product.quantidadeMinima,
         preco: product.preco,
+        categoriaId: (product as any).categoriaId || '',
         observacao: product.observacao || '',
         foto: product.foto || '',
       });
@@ -72,7 +76,7 @@ export default function EditarProdutoScreen() {
   const onSubmit = async (data: ProdutoFormData) => {
     try {
       if (id) {
-        editarProduto({
+        await editarProduto({
           ...data,
           id,
         });
@@ -92,9 +96,9 @@ export default function EditarProdutoScreen() {
         {
           text: 'Excluir',
           style: 'destructive',
-          onPress: () => {
+          onPress: async () => {
             if (id) {
-              deletarProduto(id);
+              await deletarProduto(id);
               router.back();
             }
           },
@@ -209,6 +213,36 @@ export default function EditarProdutoScreen() {
               </View>
             </View>
 
+            <Text style={styles.label}>Categoria</Text>
+            <Controller
+              control={control}
+              name="categoriaId"
+              render={({ field: { onChange, value } }) => (
+                <View style={styles.categoriesContainer}>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
+                    {categorias.map((cat) => {
+                      const isAtivo = value === cat.id;
+                      return (
+                        <TouchableOpacity
+                          key={cat.id}
+                          style={[styles.chip, isAtivo && styles.chipActive]}
+                          onPress={() => onChange(cat.id)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={[styles.chipText, isAtivo && styles.chipTextActive]}>
+                            {cat.nome}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </ScrollView>
+                  {errors.categoriaId && (
+                    <Text style={styles.errorText}>{errors.categoriaId.message}</Text>
+                  )}
+                </View>
+              )}
+            />
+
             <Text style={styles.label}>Preço</Text>
             <Controller
               control={control}
@@ -302,6 +336,40 @@ const styles = StyleSheet.create({
   },
   col: {
     flex: 1,
+  },
+  categoriesContainer: {
+    marginBottom: Spacing[4],
+  },
+  categoriesScroll: {
+    paddingVertical: Spacing[1],
+  },
+  chip: {
+    backgroundColor: Colors.surface,
+    paddingHorizontal: Spacing[4],
+    paddingVertical: Spacing[2],
+    borderRadius: Radius.full,
+    borderWidth: 1,
+    borderBottomWidth: 3,
+    borderColor: Colors.border,
+    marginRight: Spacing[2],
+  },
+  chipActive: {
+    backgroundColor: Colors.primary[600],
+    borderColor: Colors.primary[700],
+  },
+  chipText: {
+    fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.medium,
+    color: Colors.textSecondary,
+  },
+  chipTextActive: {
+    color: Colors.white,
+    fontWeight: Typography.fontWeight.bold,
+  },
+  errorText: {
+    color: Colors.danger.text,
+    fontSize: Typography.fontSize.sm,
+    marginTop: Spacing[1],
   },
   button: {
     marginTop: Spacing[6],
