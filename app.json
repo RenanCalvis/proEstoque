@@ -12,6 +12,10 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.proestoque"
     },
+    "notification": {
+      "icon": "./assets/images/icon.png",
+      "color": "#7c3aed"
+    },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
