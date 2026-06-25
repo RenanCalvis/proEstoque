@@ -44,6 +44,7 @@ export default function EditarProdutoScreen() {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ProdutoFormData>({
     resolver: zodResolver(produtoSchema),
@@ -60,6 +61,7 @@ export default function EditarProdutoScreen() {
 
   // Pré-preenche o formulário quando o produto correspondente é encontrado
   useEffect(() => {
+    console.log('useEffect triggered! Resetting form. Product:', product?.nome);
     if (product) {
       reset({
         nome: product.nome,
@@ -74,6 +76,7 @@ export default function EditarProdutoScreen() {
   }, [product, reset]);
 
   const onSubmit = async (data: ProdutoFormData) => {
+    console.log('Submitting form with data:', data);
     try {
       if (id) {
         await editarProduto({
@@ -134,10 +137,10 @@ export default function EditarProdutoScreen() {
             <Controller
               control={control}
               name="foto"
-              render={({ field: { onChange, value } }) => (
+              render={({ field: { value } }) => (
                 <ImagePickerField
                   value={value}
-                  onChange={onChange}
+                  onChange={(uri) => setValue('foto', uri || '', { shouldDirty: true, shouldTouch: true, shouldValidate: true })}
                   error={errors.foto?.message}
                 />
               )}

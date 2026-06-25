@@ -11,6 +11,13 @@ interface ImagePickerFieldProps {
 }
 
 export function ImagePickerField({ value, onChange, error }: ImagePickerFieldProps) {
+  const [localValue, setLocalValue] = React.useState(value);
+
+  React.useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  console.log('ImagePickerField rendering with localValue:', localValue, 'and props value:', value);
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     
@@ -26,22 +33,27 @@ export function ImagePickerField({ value, onChange, error }: ImagePickerFieldPro
       quality: 0.8,
     });
 
+    console.log('ImagePicker Result:', result);
+
     if (!result.canceled && result.assets && result.assets.length > 0) {
+      console.log('Selected URI:', result.assets[0].uri);
+      setLocalValue(result.assets[0].uri);
       onChange(result.assets[0].uri);
     }
   };
 
   const removeImage = () => {
-    onChange(null);
+    setLocalValue('');
+    onChange('');
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.label}>Foto do Produto</Text>
       <View style={[styles.pickerContainer, error ? styles.pickerError : null]}>
-        {value ? (
+        {localValue ? (
           <View style={styles.previewContainer}>
-            <Image source={{ uri: value }} style={styles.image} />
+            <Image source={{ uri: localValue }} style={styles.image} />
             <TouchableOpacity style={styles.removeButton} onPress={removeImage} activeOpacity={0.7}>
               <Feather name="trash-2" size={16} color={Colors.white} />
             </TouchableOpacity>
